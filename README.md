@@ -1,8 +1,6 @@
 # Anomaly Detection Using Machine Learning Model for System Performance Monitoring
 
 **Author:** Ishan Urgaonkar  
-**Reg No:** 22BEC0702  
-**Subject:** AI & ML
 
 ## Project Overview
 
