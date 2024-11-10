@@ -109,28 +109,26 @@ The project consists of the following key files and directories:
 Install the required Python libraries by running:
 
 ```bash
-Copy code
 pip install -r requirements.txt
-
+```
 4. Data Collection
 Run the data collection script to gather system metrics from the Raspberry Pi 5:
 
 ```bash
 python data_collection.py
+```
 4. Train the Model
 Train the autoencoder model using the collected system metrics data:
 
 ```bash
-Copy code
 python model_training.py
-
+```
 5. Convert the Model to TensorFlow Lite Format
 Convert the trained model to TensorFlow Lite format (.tflite) for deployment on embedded systems:
 
 ```bash
-Copy code
 python convert_to_tflite.py
-
+```
 6. Deploy to STM32
 Use the STM32 Cube AI toolchain to deploy the TensorFlow Lite model on the STM32 Nucleo 144 microcontroller. Flash the firmware to the microcontroller.
 
