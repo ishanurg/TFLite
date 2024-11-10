@@ -1,8 +1,6 @@
 # System Metrics Collection for Anomaly Detection on Raspberry Pi 5
 
 **Author:** Ishan Urgaonkar  
-**Reg No:** 22BEC0702  
-**Subject:** AI & ML
 
 ## Project Overview
 
