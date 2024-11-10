@@ -1,139 +1,162 @@
-# Anomaly Detection Using Machine Learning Model for System Performance Monitoring
+# System Metrics Collection for Anomaly Detection on Raspberry Pi 5
 
 **Author:** Ishan Urgaonkar  
+**Reg No:** 22BEC0702  
+**Subject:** AI & ML
 
 ## Project Overview
 
-Anomaly detection in Single-Board Computers (SBCs) and embedded systems is crucial for ensuring stable performance in real-time applications. This project utilizes machine learning techniques to detect anomalies based on dynamic system metrics such as CPU load, RAM usage, CPU frequency, and temperature. The system is built to monitor SBCs like the Raspberry Pi 5 and is deployed to the STM32 H7 Nucleo microcontroller for edge inference.
+This project simulates and collects system metrics such as CPU load, CPU frequency, RAM usage, and CPU temperature on a Raspberry Pi 5 for anomaly detection. These metrics are gathered in real-time over varying CPU load levels, which are then saved to a CSV file for analysis. The data collected can be used to train machine learning models (e.g., autoencoders) for detecting system anomalies and ensuring system health.
 
-This project includes:
-- Data collection from Raspberry Pi 5 using system monitoring tools.
-- An autoencoder-based machine learning model for anomaly detection.
-- Conversion of the trained model to TensorFlow Lite format.
-- Deployment on the STM32 H7 Nucleo microcontroller with real-time anomaly detection feedback via an LED indicator.
+The following features are included:
+- CPU load simulation for different levels (from 10% to 90%).
+- Real-time collection of CPU frequency, temperature, and RAM usage.
+- Logging system metrics to a CSV file (`system_metrics_dynamic.csv`).
+- Data collection runs at different CPU load levels for 3-minute intervals.
+
+This setup is ideal for researchers or engineers looking to gather system performance data for machine learning or anomaly detection tasks.
 
 ## Key Features
 
-- **Real-Time Anomaly Detection:** Detects anomalies like high CPU load, memory issues, or overheating.
-- **Edge Deployment:** The trained model is optimized and deployed on resource-constrained devices like the STM32 H7 Nucleo microcontroller.
-- **Machine Learning Model:** Uses an autoencoder for unsupervised anomaly detection, which adapts to normal system behavior without needing labeled data.
-- **Efficient and Scalable:** TensorFlow Lite optimizes the model for efficient deployment on embedded devices.
+- **Simulated CPU Load:** Runs CPU load at different levels for system performance testing.
+- **System Metrics Logging:** Records CPU load, frequency, temperature, and RAM usage.
+- **CSV Output:** Saves system metrics data to `system_metrics_dynamic.csv` for analysis.
+- **Cross-platform Support:** Designed to run on Raspberry Pi 5 but can be adapted to other Linux-based systems.
 
 ## Components Used
 
-- **Raspberry Pi 5:** SBC for data collection.
-- **STM32 H7 Nucleo 144:** Microcontroller for model inference.
-- **STM32 Cube AI:** Toolchain for model optimization and deployment.
-- **TensorFlow Lite (TFLite):** Framework for converting and deploying the model on embedded systems.
+- **Raspberry Pi 5:** SBC for data collection and simulation.
 - **Python Libraries:**
-  - `psutil`: For CPU load and RAM usage monitoring.
-  - `subprocess`: For fetching CPU temperature.
-  - `multiprocessing`: For simulating system load variations.
-  - `pandas`, `numpy`: For data manipulation and processing.
-  - `scikit-learn`: For scaling the data.
-- **CSV File:** Stores the collected system metrics data.
+  - `psutil`: For CPU load, memory, and frequency monitoring.
+  - `subprocess`: To read CPU temperature.
+  - `multiprocessing`: To simulate CPU load via parallel processing.
+  - `csv`: To store data in CSV format.
+  - `time`: For interval timing and process control.
+- **Output File:** `system_metrics_dynamic.csv`.
 
 ## GitHub Repository
 
-Access the full project, including code and detailed implementation, via the following [GitHub Repository](https://github.com/ishanurg/TFLite.git).
+You can access the full project, including the code, via the following [GitHub Repository](https://github.com/ishanurg/SystemMetricsCollection).
 
 ## Project Workflow
 
-### Step 1: Data Collection
+### Step 1: Create a Virtual Environment
 
-- The system metrics (CPU load, RAM usage, CPU frequency, and temperature) are collected from the Raspberry Pi 5.
-- Tools used:
-  - `psutil`: For CPU load and RAM usage.
-  - `subprocess`: To read CPU temperature.
-  - `multiprocessing`: To simulate different load levels.
-- The data is stored in a CSV file (`system_metrics_dynamic.csv`) for further processing.
+To ensure dependencies are installed in an isolated environment, it’s recommended to create a virtual environment first. Run the following commands to create and activate the environment:
+ 
+ Install virtualenv if not installed
+```bash
+pip install virtualenv
+```
+# Create a virtual environment named "dataset"
+```bash
+python3 -m venv dataset
+```
+# Activate the virtual environment
+```bash
+cd dataset
+source bin/activate
+```
+Step 2: Clone the Repository
+Clone the repository to your Raspberry Pi 5 (or local machine) to access the code:
 
-### Step 2: Model Training
-
-- **Autoencoder-based Model:**
-  - **Why Autoencoder?** Autoencoders are ideal for anomaly detection in unsupervised settings. They learn the normal system behavior and can flag anomalies based on the reconstruction error.
-  - **Model Architecture:**
-    - Encoder and decoder architecture compresses input features (CPU load, frequency, RAM usage).
-    - Uses Mean Squared Error (MSE) loss to minimize reconstruction error.
-    - The model is trained on the dataset using scaled values for CPU load, CPU frequency, and RAM usage.
-- **Model Training Process:**
-  - Data preprocessing: MinMax scaling for CPU load, frequency, and RAM usage.
-  - The autoencoder model is trained using TensorFlow/Keras.
-  - The trained model is saved and converted to `.h5` format.
-
-### Step 3: Model Conversion to TensorFlow Lite
-
-- The trained model is converted to TensorFlow Lite format (`.tflite`) for efficient deployment on resource-constrained devices like the STM32 Nucleo microcontroller.
-- **Model Quantization:** Reduces the model size for optimal performance on embedded devices.
-
-### Step 4: Model Deployment on STM32 H7 Nucleo 144
-
-- Using **STM32 Cube AI**, the converted TensorFlow Lite model is deployed to the STM32 H7 Nucleo microcontroller.
-- The microcontroller performs inference on the system metrics and indicates anomaly detection via an LED blink (green for no anomaly, red for anomaly).
-  
-### Step 5: Anomaly Detection
-
-- During inference, the system calculates the reconstruction error (MSE) between the input data and the model's reconstruction.
-- If the error exceeds a predefined threshold, an anomaly is flagged.
-- Additional checks for system metrics (e.g., temperature, CPU load) are included to detect known issues that may not be captured by the model alone.
-
-## Code Structure
-
-The project consists of the following key files and directories:
-
-### `data_collection.py`
-- Script for collecting system metrics from Raspberry Pi 5 (CPU load, RAM usage, temperature).
-- Saves collected data in a CSV file.
-
-### `model_training.py`
-- Defines and trains the autoencoder model for anomaly detection.
-- Scales the data and trains the model using Mean Squared Error (MSE).
-- Converts the trained model to TensorFlow Lite format.
-
-### `anomaly_detection.py`
-- Contains functions for detecting anomalies based on the trained model and system metrics.
-- Includes threshold-based checks for temperature, CPU load, and RAM usage.
-
-### `deployment_code/`
-- Contains code for deployment on the STM32 Nucleo microcontroller.
-- The `main.c` file handles the model inference and LED feedback.
-
-## How to Run the Project
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/ishanurg/TFLite.git
-   cd TFLite
-2. Install dependencies
-Install the required Python libraries by running:
+```bash
+git clone -b master-pi https://github.com/ishanurg/TFLite.git
+```
+Step 3: Install Dependencies
+Install the required Python libraries by running the following command in your virtual environment:
 
 ```bash
 pip install -r requirements.txt
 ```
-4. Data Collection
-Run the data collection script to gather system metrics from the Raspberry Pi 5:
+```bash
+pip install psutil
+```
+Step 4: Run the Data Collection Script
+The data_collection.py script collects system metrics at different CPU load levels (from 10% to 90%) and logs them to a CSV file.
+
+Run the script using:
 
 ```bash
 python data_collection.py
 ```
-4. Train the Model
-Train the autoencoder model using the collected system metrics data:
+The system will:
+Simulate CPU load levels in the range of 10% to 90%.
+Collect the following metrics every second:
+CPU Load (%)
+CPU Frequency (MHz)
+CPU Temperature (°C)
+RAM Usage (MB)
+The data will be saved in a CSV file called system_metrics_dynamic.csv.
+Step 5: Check the Output
+After the script finishes running, you will have a CSV file called system_metrics_dynamic.csv containing the system metrics data. The file will include the following columns:
 
+Timestamp: The time the metric was logged.
+CPU Load (%): The simulated CPU load during that timestamp.
+CPU Frequency (MHz): The frequency of the CPU at that time.
+CPU Temperature (°C): The temperature of the CPU.
+RAM Usage (MB): The amount of RAM used at that time.
+Step 6: Stop the Script
+You can stop the script anytime by pressing Ctrl+C in the terminal. It will safely terminate the data collection process.
+
+Code Structure
+The project consists of the following key files:
+
+data_collection.py
+The main script that collects system metrics and logs them to a CSV file.
+Includes functions to simulate CPU load, read CPU frequency and temperature, and monitor RAM usage.
+Logs the collected data to system_metrics_dynamic.csv.
+requirements.txt
+Contains a list of required Python libraries for the project (e.g., psutil).
+system_metrics_dynamic.csv
+CSV file where system metrics are logged. The data includes:
+Timestamp
+CPU Load (%)
+CPU Frequency (MHz)
+CPU Temperature (°C)
+RAM Usage (MB)
+How to Run the Project
+1. Clone the repository
 ```bash
-python model_training.py
+git clone -b master-pi https://github.com/ishanurg/TFLite.git
 ```
-5. Convert the Model to TensorFlow Lite Format
-Convert the trained model to TensorFlow Lite format (.tflite) for deployment on embedded systems:
-
+2. Set up a Virtual Environment
 ```bash
-python convert_to_tflite.py
+virtualenv env
 ```
-6. Deploy to STM32
-Use the STM32 Cube AI toolchain to deploy the TensorFlow Lite model on the STM32 Nucleo 144 microcontroller. Flash the firmware to the microcontroller.
+# Activate the environment
+```bash
+source env/bin/activate
+```
+3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+4. Run the Data Collection Script
+```bash
+python dataset.py
+```
+5. Check the Output
+The system metrics will be logged in the system_metrics_dynamic.csv file. You can open this file with a spreadsheet application or analyze it programmatically.
 
-7. Test Anomaly Detection
-The system will blink an LED connected to the microcontroller to indicate whether an anomaly has been detected:
+6. Stop the Script
+You can stop the script anytime by pressing Ctrl+C in the terminal.
 
-Green LED: No anomaly detected.
-Red LED: Anomaly detected.
+
+#References
+psutil Documentation: https://psutil.readthedocs.io
+Raspberry Pi 5 Documentation: https://www.raspberrypi.org/documentation/
+Subprocess Module (Python): https://docs.python.org/3/library/subprocess.html
+
+
+---
+
+### Key Points in the README:
+
+1. **Virtual Environment Setup**: Instructions to create a virtual environment using `virtualenv` for isolated dependency management.
+2. **Step-by-Step Guide**: Includes steps to clone the repo, install dependencies, run the data collection script, and check the results.
+3. **CSV File Output**: Describes the contents of the CSV file that is generated and how to interpret it.
+4. **Key Features**: Highlights the main functionalities of the system, such as CPU load simulation and metrics logging.
+
+This format ensures that users can easily set up and run the project on their own system. You can copy-paste this into the `README.md` file in your GitHub repository.
+
