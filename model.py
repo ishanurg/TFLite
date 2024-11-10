@@ -6,12 +6,12 @@ from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras import regularizers
 import tensorflow as tf
 
-# Load data from CSV file (ensure the CSV has 'cpu_load', 'cpu_freq', 'temperature', 'ram_usage' columns)
+# Load data from CSV file (ensure the CSV has 'cpu_load', 'cpu_freq', 'ram_usage', and 'temperature' columns)
 data = pd.read_csv("/home/ishanurgaonkar/Downloads/system_metrics_dynamic.csv")  # Update with your CSV filename
 
-# Data preprocessing: Only select columns for scaling (ignore 'timestamp')
+# Data preprocessing: Only scale 'cpu_load', 'cpu_freq', and 'ram_usage'
 scaler = MinMaxScaler()
-data_scaled = scaler.fit_transform(data[['cpu_load', 'cpu_freq', 'temperature', 'ram_usage']])
+data_scaled = scaler.fit_transform(data[['cpu_load', 'cpu_freq', 'ram_usage']])
 
 # Define autoencoder model
 input_dim = data_scaled.shape[1]
@@ -38,13 +38,6 @@ tflite_model = converter.convert()
 with open("optimized_autoencoder.tflite", "wb") as f:
     f.write(tflite_model)
 
-# Set thresholds for real-time anomaly detection
-high_temp_threshold = 55
-high_cpu_usage_threshold = 80
-high_ram_usage_threshold = 3 * 1024  # 3 GB
-cpu_freq_lower_threshold = 1500
-cpu_freq_upper_threshold = 2800
-
 # Load the TFLite model for testing
 interpreter = tf.lite.Interpreter(model_path="optimized_autoencoder.tflite")
 interpreter.allocate_tensors()
@@ -53,43 +46,77 @@ output_details = interpreter.get_output_details()
 
 # Function to detect anomalies in real-time
 def detect_anomaly(data_point):
-    # Scale and preprocess data (ignore the timestamp column)
-    data_point_scaled = scaler.transform([data_point])  # Don't include timestamp, use only the features
-    
-    # Run the autoencoder for reconstruction
+    # Extract features
+    cpu_load, cpu_freq, temperature, ram_usage = data_point
+
+    # Ensure data point is passed as a 2D array (fix for MinMaxScaler warning)
+    data_point_scaled = scaler.transform([[cpu_load, cpu_freq, ram_usage]])
+
+    # Run the autoencoder for reconstruction (only for scaled features)
     interpreter.set_tensor(input_details[0]['index'], np.array(data_point_scaled, dtype=np.float32))
     interpreter.invoke()
     reconstructed_data = interpreter.get_tensor(output_details[0]['index'])[0]
+    
+    # Calculate MSE (Mean Squared Error)
     mse = np.mean(np.power(data_point_scaled - reconstructed_data, 2))
+
+    # Print MSE for debugging
+    print(f"Input: {data_point}")
+    print(f"Reconstructed: {reconstructed_data}")
+    print(f"MSE: {mse}")
+
+    # Check temperature anomaly (direct if-else check)
+    if temperature > 55:
+        print(f"Temperature anomaly detected: {temperature}°C")
+        return True
+
+    # Check for RAM usage anomaly (greater than 3500 MB)
+    if ram_usage > 3500:  # New RAM threshold condition
+        print(f"RAM anomaly detected: {ram_usage} MB")
+        return True
+
+    # Check for high CPU load anomaly (greater than 80%)
+    if cpu_load > 80:  # High CPU load condition
+        print(f"High CPU load detected: {cpu_load}%")
+        return True
 
     # Calculate anomaly score based on weighted conditions
     anomaly_score = 0
-    
-    # High priority conditions
-    if data_point[0] > high_cpu_usage_threshold:  # cpu_load condition
-        anomaly_score += 3
-    if data_point[2] > high_temp_threshold:  # temperature condition
-        anomaly_score += 3
-    if data_point[3] > high_ram_usage_threshold:  # ram_usage condition
+    if cpu_load > 80:  # High CPU load condition
         anomaly_score += 2
-
-    # CPU frequency condition (low priority)
-    if data_point[1] < cpu_freq_lower_threshold:  # cpu_freq drops below threshold
-        anomaly_score += 1
-    elif data_point[1] > cpu_freq_upper_threshold:  # cpu_freq goes above threshold
+    if ram_usage > 3 * 1024:  # High RAM usage condition (3 GB)
+        anomaly_score += 2
+    if cpu_freq < 1000 or cpu_freq > 2800:  # CPU frequency condition
         anomaly_score += 1
 
     # Detect anomaly if score exceeds threshold or MSE is high
-    if anomaly_score >= 4 or mse > 1:  # Adjust threshold based on testing
-        print("Anomaly Detected!")
+    mse_threshold = 0.2  # Adjust threshold to reduce false positives (increased threshold)
+    if anomaly_score >= 4 or mse > mse_threshold:  # Adjust MSE threshold based on testing
+        print(f"Anomaly Detected based on MSE! (MSE: {mse})")
         return True
+
     return False
 
-# Example: Test the model with an input (only providing the relevant feature values)
-test_data = [55, 2000, 48, 1100]  # cpu_load, cpu_freq, temperature, ram_usage (timestamp is ignored)
-is_anomaly = detect_anomaly(test_data)
+# Function to handle user input for testing
+def get_user_input():
+    try:
+        cpu_load = float(input("Enter CPU load (%): "))
+        cpu_freq = float(input("Enter CPU frequency (MHz): "))
+        temperature = float(input("Enter temperature (°C): "))
+        ram_usage = float(input("Enter RAM usage (MB): "))
+        return [cpu_load, cpu_freq, temperature, ram_usage]
+    except ValueError:
+        print("Invalid input. Please enter numeric values.")
+        return None
 
-if is_anomaly:
-    print("Anomaly detected in the test data.")
-else:
-    print("No anomaly detected.")
+# Test the model with user input
+while True:
+    test_data = get_user_input()
+    if test_data:
+        is_anomaly = detect_anomaly(test_data)
+        if is_anomaly:
+            print("Anomaly detected in the input data.")
+        else:
+            print("No anomaly detected in the input data.")
+    else:
+        print("Please enter valid input values.")
