@@ -105,3 +105,35 @@ The project consists of the following key files and directories:
    ```bash
    git clone https://github.com/ishanurg/TFLite.git
    cd TFLite
+2. Install dependencies
+Install the required Python libraries by running:
+
+```bash
+pip install -r requirements.txt
+```
+4. Data Collection
+Run the data collection script to gather system metrics from the Raspberry Pi 5:
+
+```bash
+python data_collection.py
+```
+4. Train the Model
+Train the autoencoder model using the collected system metrics data:
+
+```bash
+python model_training.py
+```
+5. Convert the Model to TensorFlow Lite Format
+Convert the trained model to TensorFlow Lite format (.tflite) for deployment on embedded systems:
+
+```bash
+python convert_to_tflite.py
+```
+6. Deploy to STM32
+Use the STM32 Cube AI toolchain to deploy the TensorFlow Lite model on the STM32 Nucleo 144 microcontroller. Flash the firmware to the microcontroller.
+
+7. Test Anomaly Detection
+The system will blink an LED connected to the microcontroller to indicate whether an anomaly has been detected:
+
+Green LED: No anomaly detected.
+Red LED: Anomaly detected.
