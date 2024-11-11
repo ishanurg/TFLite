@@ -156,5 +156,5 @@ Subprocess Module (Python): https://docs.python.org/3/library/subprocess.html
 3. **CSV File Output**: Describes the contents of the CSV file that is generated and how to interpret it.
 4. **Key Features**: Highlights the main functionalities of the system, such as CPU load simulation and metrics logging.
 
-This format ensures that users can easily set up and run the project on their own system. You can copy-paste this into the `README.md` file in your GitHub repository.
+
 
